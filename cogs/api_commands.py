@@ -103,17 +103,18 @@ class APICommands(commands.Cog):
             await interaction.followup.send(embed=embed)
             return
 
+        arr = []
         for uuid in self.player_list:
             data = get_player_data_hypixel(hypixel_api_key, uuid)
             if not data:
-                embed = discord.Embed(
+                error_embed = discord.Embed(
                     title='Error',
                     colour=discord.Colour.red(),    
                     timestamp=dt.datetime.now()
                 )
-                embed.set_author(name='KOS Bot')
-                embed.add_field(name=f'Hypixel api fucking sucks or my api key died so u gonna have to wait for me to regenerate it :3.', value=f'UUID: {uuid}')
-                await interaction.followup.send(embed=embed)
+                error_embed.set_author(name='KOS Bot')
+                error_embed.add_field(name=f'Hypixel api fucking sucks or my api key died so u gonna have to wait for me to regenerate it :3.', value=f'UUID: {uuid}')
+                await interaction.followup.send(embed=error_embed)
                 return
             if not 'lastLogin' in data['player'].keys():
                 numbers = get_numbers_from_json(data['player']['stats']['Pit']['profile'])
@@ -128,15 +129,16 @@ class APICommands(commands.Cog):
                 print(dt_object.strftime('%c'))
                 difference = datetime.datetime.now() - dt_object
                 print(f'Time since last action: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds')
-                embed = discord.Embed(
-                    title=f'{data["player"]["displayname"]}',
-                    colour=discord.Colour.blue(),    
-                    timestamp=dt.datetime.now()
-                )
-                embed.set_author(name='KOS Bot')
-                embed.add_field(name='This guy sucks and has api disabled against them.', value='', inline=False)
-                embed.add_field(name=f'Time since last pit action: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', value='', inline=False)
-                await interaction.followup.send(embed=embed)
+                # embed = discord.Embed(
+                #     title=f'{data["player"]["displayname"]}',
+                #     colour=discord.Colour.blue(),    
+                #     timestamp=dt.datetime.now()
+                # )
+                # embed.set_author(name='KOS Bot')
+                # embed.add_field(name='This guy sucks and has api disabled against them.', value='', inline=False)
+                # embed.add_field(name=f'Time since last pit action: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', value='', inline=False)
+                # await interaction.followup.send(embed=embed)
+                arr.append([data["player"]["displayname"], difference])
             else:
                 dt_object = datetime.datetime.fromtimestamp(data['player']['lastLogin'] / 1000)
                 print(dt_object.strftime('%c'))
@@ -146,15 +148,49 @@ class APICommands(commands.Cog):
                 status = get_player_status_hypixel(hypixel_api_key, uuid)
                 print(status)
                 print(f"Online: {status['session']['online']}")
+                # embed = discord.Embed(
+                #     title=f'{data["player"]["displayname"]}',
+                #     colour=discord.Colour.blue(),    
+                #     timestamp=dt.datetime.now()
+                # )
+                # embed.set_author(name='KOS Bot')
+                # embed.add_field(name=f'Time since last login: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', value='', inline=False)
+                # embed.add_field(name=f"Online: {status['session']['online']}", value='', inline=False)
+                # await interaction.followup.send(embed=embed)
+                arr.append([data["player"]["displayname"], difference, status['session']['online']])
+            if len(arr) == 10:
                 embed = discord.Embed(
-                    title=f'{data["player"]["displayname"]}',
+                    title=f'KOS LIST',
                     colour=discord.Colour.blue(),    
                     timestamp=dt.datetime.now()
                 )
                 embed.set_author(name='KOS Bot')
-                embed.add_field(name=f'Time since last login: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', value='', inline=False)
-                embed.add_field(name=f"Online: {status['session']['online']}", value='', inline=False)
+                for person in arr:
+                    if len(person) == 2:
+                        # no api
+                        embed.add_field(name=f'{person[0]}', value=f'API Disabled.\nTime since last pit action: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', inline=False)
+                    else:
+                        # has api
+                        embed.add_field(name=f'{person[0]}', value=f'Online: {person[2]}\nTime since last login: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', inline=False)
                 await interaction.followup.send(embed=embed)
+                arr.clear()
+        if arr:
+            embed = discord.Embed(
+                title=f'KOS LIST',
+                colour=discord.Colour.blue(),    
+                timestamp=dt.datetime.now()
+            )
+            embed.set_author(name='KOS Bot')
+            for person in arr:
+                if len(person) == 2:
+                    # no api
+                    embed.add_field(name=f'{person[0]}', value=f'API Disabled.\nTime since last pit action: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', inline=False)
+                else:
+                    # has api
+                    embed.add_field(name=f'{person[0]}', value=f'Online: {person[2]}\nTime since last login: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', inline=False)
+            await interaction.followup.send(embed=embed)
+            arr.clear()
+
 
     @discord.app_commands.command(name='add', description='Add to list of players')
     @discord.app_commands.describe(username='The username of the player.')
