@@ -8,6 +8,7 @@ import os
 import logging
 import datetime
 import numbers
+import time
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -111,13 +112,19 @@ class APICommands(commands.Cog):
                     timestamp=dt.datetime.now()
                 )
                 embed.set_author(name='KOS Bot')
-                embed.add_field(name=f'Hypixel api fucking sucks and died for some reason idk.', value=f'UUID: {uuid}')
+                embed.add_field(name=f'Hypixel api fucking sucks or my api key died so u gonna have to wait for me to regenerate it :3.', value=f'UUID: {uuid}')
                 await interaction.followup.send(embed=embed)
                 return
             if not 'lastLogin' in data['player'].keys():
-                numbers = get_numbers_from_json(data)
+                numbers = get_numbers_from_json(data['player']['stats']['Pit']['profile'])
                 numbers.sort()
-                dt_object = datetime.datetime.fromtimestamp(numbers[-1] / 1000)
+                index = -1
+                candidate = numbers[index] / 1000
+                current_time = int(time.time())
+                while candidate > current_time:
+                    index -= 1
+                    candidate = numbers[index] / 1000
+                dt_object = datetime.datetime.fromtimestamp(candidate)
                 print(dt_object.strftime('%c'))
                 difference = datetime.datetime.now() - dt_object
                 print(f'Time since last action: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds')
@@ -128,7 +135,7 @@ class APICommands(commands.Cog):
                 )
                 embed.set_author(name='KOS Bot')
                 embed.add_field(name='This guy sucks and has api disabled against them.', value='', inline=False)
-                embed.add_field(name=f'Time since last action: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', value='', inline=False)
+                embed.add_field(name=f'Time since last pit action: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', value='', inline=False)
                 await interaction.followup.send(embed=embed)
             else:
                 dt_object = datetime.datetime.fromtimestamp(data['player']['lastLogin'] / 1000)
