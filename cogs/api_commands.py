@@ -9,6 +9,7 @@ import logging
 import datetime
 import numbers
 import time
+from typing import Optional
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -89,7 +90,8 @@ class APICommands(commands.Cog):
 
         
     @discord.app_commands.command(name='list', description='Get list of players')
-    async def get_list_command(self, interaction: discord.Interaction):
+    @discord.app_commands.describe(api_key='The username of the player.', )
+    async def get_list_command(self, interaction: discord.Interaction, api_key: Optional[str] = None):
         await interaction.response.defer()
 
         if not self.player_list:
@@ -102,10 +104,15 @@ class APICommands(commands.Cog):
             embed.add_field(name=f'yo retard u dont have any people in ur list', value=f'')
             await interaction.followup.send(embed=embed)
             return
+        
+        if api_key:
+            key = api_key
+        else:
+            key = hypixel_api_key
 
         arr = []
         for uuid in self.player_list:
-            data = get_player_data_hypixel(hypixel_api_key, uuid)
+            data = get_player_data_hypixel(key, uuid)
             if not data:
                 error_embed = discord.Embed(
                     title='Error',
@@ -145,7 +152,7 @@ class APICommands(commands.Cog):
                 difference = datetime.datetime.now() - dt_object
                 print(difference.seconds % 86400)
                 print(f'Time since last login: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds')
-                status = get_player_status_hypixel(hypixel_api_key, uuid)
+                status = get_player_status_hypixel(key, uuid)
                 print(status)
                 print(f"Online: {status['session']['online']}")
                 # embed = discord.Embed(
