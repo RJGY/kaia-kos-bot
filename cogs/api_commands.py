@@ -168,10 +168,10 @@ class APICommands(commands.Cog):
                 for person in arr:
                     if len(person) == 2:
                         # no api
-                        embed.add_field(name=f'{person[0]}', value=f'API Disabled.\nTime since last pit action: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', inline=False)
+                        embed.add_field(name=f'{person[0]}', value=f'API Disabled.\nTime since last pit action: {person[1].days} days, {person[1].seconds // 3600} hours, {(person[1].seconds % 3600) // 60} minutes, {(person[1].seconds % 60)} seconds', inline=False)
                     else:
                         # has api
-                        embed.add_field(name=f'{person[0]}', value=f'Online: {person[2]}\nTime since last login: {difference.days} days, {difference.seconds // 3600} hours, {(difference.seconds % 3600) // 60} minutes, {(difference.seconds % 60)} seconds', inline=False)
+                        embed.add_field(name=f'{person[0]}', value=f'Online: {person[2]}\nTime since last login: {person[1].days} days, {person[1].seconds // 3600} hours, {(person[1].seconds % 3600) // 60} minutes, {(person[1].seconds % 60)} seconds', inline=False)
                 await interaction.followup.send(embed=embed)
                 arr.clear()
         if arr:
