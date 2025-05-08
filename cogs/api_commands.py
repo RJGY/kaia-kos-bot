@@ -45,12 +45,16 @@ def get_player_data_hypixel(key: str, uuid: str):
     json_obj = requests.get(f"{hypixel_api_host}/player?key={key}&uuid={uuid}")
     if json_obj.status_code != 200:
         return
+    global hypixel_api_key 
+    hypixel_api_key = key
     return json_obj.json()
 
 def get_player_status_hypixel(key: str, uuid: str):
     json_obj = requests.get(f"{hypixel_api_host}/status?key={key}&uuid={uuid}")
     if json_obj.status_code != 200:
         return
+    global hypixel_api_key 
+    hypixel_api_key = key
     return json_obj.json()
 
 def get_numbers_from_json(json_obj, numbers_list=None):
